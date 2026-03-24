@@ -35,7 +35,7 @@ exports.commonStudentsOfAllTeachers = async (teachers) => {
   console.log(`Started listing all students by given teachers ${teachers}`)
 
   try {
-    students = await teacherRepo.commonStudentsOfAllTeachers(teachers)
+    const students = await teacherRepo.commonStudentsOfAllTeachers(teachers)
     return students
 
   } catch (err) {
@@ -46,9 +46,9 @@ exports.commonStudentsOfAllTeachers = async (teachers) => {
 exports.suspendStudent = async (student) => {
   console.log(`Suspend student ${student}`)
   try {
-    studentRecord = await studentRepo.findStudent(student)
+    const studentRecord = await studentRepo.findStudent(student)
     if(!studentRecord){
-        await studentRepo.insertStudent(student, true)
+        throw new Error("Student not found")
     }
     await studentRepo.updateStudent(true, student)
   } catch (err) {
