@@ -1,9 +1,10 @@
 const db = require('../db')
+const service = require('../services/teacher.service')
 
 exports.register = async(req, res) => {
     const {teacher, students} = req.body
     try{
-
+        await service.registerStudents(teacher, students)
         return res.status(204).send()
 
     }catch(err){
@@ -13,10 +14,10 @@ exports.register = async(req, res) => {
 }
 
 exports.commonStudents = async(req, res) => {
-    const {teacher, students} = req.query
+    const {teacher} = req.query
     try{
-        
-        return res.status(204).send()
+        students = await service.commonStudentsOfAllTeachers(teacher)
+        return res.status(204).send(students)
 
     }catch(err){
         console.error(err)
@@ -27,7 +28,7 @@ exports.commonStudents = async(req, res) => {
 exports.suspendedStudent = async(req, res) => {
     const {student} = req.query
     try{
-        
+        await service.suspendStudent(student)
         return res.status(204).send()
 
     }catch(err){
