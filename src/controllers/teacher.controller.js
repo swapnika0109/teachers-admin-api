@@ -1,5 +1,5 @@
-const db = require('../db')
 const service = require('../services/teacher.service')
+const { NotFoundError } = require('../services/teacher.service')
 
 exports.register = async(req, res) => {
     const {teacher, students} = req.body
@@ -39,6 +39,9 @@ exports.suspendedStudent = async(req, res) => {
 
     }catch(err){
         console.error(`Error suspending student: ${err.message}`)
+        if (err instanceof NotFoundError) {
+            return res.status(404).json({ message: err.message })
+        }
         return res.status(500).json({ message: 'Internal server error' })
     }
 }
@@ -53,6 +56,9 @@ exports.notifystudents = async(req, res) => {
 
     }catch(err){
         console.error(`Error retrieveing list: ${err.message}`)
+        if (err instanceof NotFoundError) {
+            return res.status(404).json({ message: err.message })
+        }
         return res.status(500).json({ message: 'Internal server error' })
     }
 }

@@ -1,6 +1,15 @@
 const teacherRepo = require('../repositories/teacher.repo')
 const studentRepo = require('../repositories/student.repo')
 
+class NotFoundError extends Error {
+  constructor(message) {
+    super(message)
+    this.name = 'NotFoundError'
+  }
+}
+
+exports.NotFoundError = NotFoundError
+
 exports.registerStudents = async (teacherEmail, students) => {
   console.log(`registerStudents - ${students} by teacher ${teacherEmail}`)
   try {
@@ -34,7 +43,7 @@ exports.commonStudentsOfAllTeachers = async (teachers) => {
   console.log(`commonStudentsOfAllTeachers - teachers: ${teachers}`)
   try {
     const students = await teacherRepo.commonStudentsOfAllTeachers(teachers)
-    console.log(`commonStudentsOfAllTeachers   - found ${students.length} common students`)
+    console.log(`commonStudentsOfAllTeachers - found ${students.length} common students`)
     return students
 
   } catch (err) {
@@ -44,11 +53,11 @@ exports.commonStudentsOfAllTeachers = async (teachers) => {
 
 exports.suspendStudent = async (student) => {
   console.log(`suspendStudent - student: ${student}`)
+  const studentRecord = await studentRepo.findStudent(student)
+  if (!studentRecord) {
+    throw new NotFoundError(`Student ${student} not found`)
+  }
   try {
-    const studentRecord = await studentRepo.findStudent(student)
-    if(!studentRecord){
-        throw new Error("Student not found")
-    }
     await studentRepo.updateStudent(true, student)
     console.log(`suspendStudent - student suspended: ${student}`)
   } catch (err) {
@@ -56,24 +65,27 @@ exports.suspendStudent = async (student) => {
   }
 }
 
-exports.notifyStudents = async (teacher, notificationText, students) => {
+exports.notifyStudents = async (teacher, notificationText) => {
   console.log(`notifyStudents - teacher: ${teacher}`)
   try {
-    teacherRecord = await teacherRepo.findStudent(student)
+    const teacherRecord = await teacherRepo.findTeacher(teacher)
     if (!teacherRecord) {
-      throw new Error('Teacher not found')
+      throw new NotFoundError(`Teacher ${teacher} not found`)
     }
+
+    const mentionedStudents = [...notificationText.matchAll(/@([\w.+-]+@[\w.-]+)/g)].map(m => m[1])
 
     let activeStudentsToNotify = []
-
-    if (students.length > 0){
-        activeStudentsToNotify = await studentRepo.listActiveStudentsByEmails(students)
+    if (mentionedStudents.length > 0) {
+      activeStudentsToNotify = await studentRepo.listActiveStudentsByEmails(mentionedStudents)
     }
-    const registeredStudents  = await teacherRepo.listActiveSudentsRegisteredByTeacher(teacher)
-    const allStudents = [...new Set(...activeStudentsToNotify, ...registeredStudents)]
+
+    const registeredStudents = await teacherRepo.listActiveSudentsRegisteredByTeacher(teacher)
+    const allStudents = [...new Set([...activeStudentsToNotify, ...registeredStudents])]
     console.log(`notifyStudents - total recipients: ${allStudents.length}`)
     return allStudents
   } catch (err) {
-    throw new Error(`Failed to retrieve the list of students : ${err.message}`)
+    if (err.name === 'NotFoundError') throw err
+    throw new Error(`Failed to retrieve the list of students: ${err.message}`)
   }
 }
