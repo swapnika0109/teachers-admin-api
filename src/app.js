@@ -8,7 +8,7 @@ app.use('/api', routes)
 
 
 app.use((err, req, res, next) => {
-  console.error(err.stack)
+  console.error(`Triggered error : ${err.stack}`)
   res.status(500).json({ message: 'Internal server error' })
 })
 

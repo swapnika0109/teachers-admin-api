@@ -2,8 +2,7 @@ const teacherRepo = require('../repositories/teacher.repo')
 const studentRepo = require('../repositories/student.repo')
 
 exports.registerStudents = async (teacherEmail, students) => {
-  console.log(`Started registering students by teacher ${teacherEmail}`)
-
+  console.log(`registerStudents - ${students} by teacher ${teacherEmail}`)
   try {
     let teacherRecord = await teacherRepo.findTeacher(teacherEmail)
 
@@ -32,10 +31,10 @@ exports.registerStudents = async (teacherEmail, students) => {
 }
 
 exports.commonStudentsOfAllTeachers = async (teachers) => {
-  console.log(`Started listing all students by given teachers ${teachers}`)
-
+  console.log(`commonStudentsOfAllTeachers - teachers: ${teachers}`)
   try {
     const students = await teacherRepo.commonStudentsOfAllTeachers(teachers)
+    console.log(`commonStudentsOfAllTeachers   - found ${students.length} common students`)
     return students
 
   } catch (err) {
@@ -44,20 +43,21 @@ exports.commonStudentsOfAllTeachers = async (teachers) => {
 }
 
 exports.suspendStudent = async (student) => {
-  console.log(`Suspend student ${student}`)
+  console.log(`suspendStudent - student: ${student}`)
   try {
     const studentRecord = await studentRepo.findStudent(student)
     if(!studentRecord){
         throw new Error("Student not found")
     }
     await studentRepo.updateStudent(true, student)
+    console.log(`suspendStudent - student suspended: ${student}`)
   } catch (err) {
     throw new Error(`Failed to suspend the student: ${err.message}`)
   }
 }
 
 exports.notifyStudents = async (teacher, notificationText, students) => {
-  console.log(`Retrieve the list of  students ${students} who can receive notification by teacher ${teacher}`)
+  console.log(`notifyStudents - teacher: ${teacher}`)
   try {
     teacherRecord = await teacherRepo.findStudent(student)
     if (!teacherRecord) {
@@ -67,13 +67,13 @@ exports.notifyStudents = async (teacher, notificationText, students) => {
     let activeStudentsToNotify = []
 
     if (students.length > 0){
-        activeStudentsToNotify = await studentRepo.listActiveStudentsByEmails(students) 
+        activeStudentsToNotify = await studentRepo.listActiveStudentsByEmails(students)
     }
     const registeredStudents  = await teacherRepo.listActiveSudentsRegisteredByTeacher(teacher)
     const allStudents = [...new Set(...activeStudentsToNotify, ...registeredStudents)]
+    console.log(`notifyStudents - total recipients: ${allStudents.length}`)
     return allStudents
   } catch (err) {
     throw new Error(`Failed to retrieve the list of students : ${err.message}`)
   }
 }
-
