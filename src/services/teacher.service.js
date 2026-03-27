@@ -84,8 +84,8 @@ exports.suspendStudent = async (student) => {
 
 /**
  * Returns list of students who can receive a notification from the teacher.
- * Includes registered active students + @mentioned active students. No duplicates.
- * Throws NotFoundError if teacher does not exist.
+ * Includes registered active students + @mentioned students who are not suspended (even if not registered).
+ * No duplicates. Throws NotFoundError if teacher does not exist.
  * @param {string} teacher - teacher email
  * @param {string} notificationText - notification text (may contain @mentions)
  * @returns {string[]} list of recipient emails
@@ -105,7 +105,8 @@ exports.notifyStudents = async (teacher, notificationText) => {
 
     let activeStudentsToNotify = []
     if (mentionedStudents.length > 0) {
-      activeStudentsToNotify = await studentRepo.listActiveStudentsByEmails(mentionedStudents)
+      const suspendedStudents = await studentRepo.findSuspendedStudentsByEmails(mentionedStudents)
+      activeStudentsToNotify = mentionedStudents.filter(s => !suspendedStudents.includes(s))
     }
 
     const registeredStudents = await teacherRepo.listActiveSudentsRegisteredByTeacher(teacher)

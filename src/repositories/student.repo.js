@@ -23,6 +23,14 @@ exports.updateStudent = async (studentEmail, isSuspended) => {
   return result
 }
 
+exports.findSuspendedStudentsByEmails = async (students) => {
+  const [rows] = await db.query(
+    `SELECT email FROM students WHERE email IN (?) AND is_suspended = TRUE`,
+    [students]
+  )
+  return rows.map(row => row.email)
+}
+
 exports.listActiveStudentsByEmails = async (students) =>{
   const [rows] = await db.query(
     `SELECT email 
