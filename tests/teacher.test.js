@@ -78,7 +78,8 @@ describe('Teacher admin API test cases', () => {
 
     expect(response.statusCode).toBe(200);
     expect(response.body).toHaveProperty('recipients');
-    // expect(response.body.recipients).toContain("studentagnes@gmail.com");
+    expect(response.body.recipients).toContain("studentagnes@gmail.com");
   });
+
 
 });
