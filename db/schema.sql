@@ -8,11 +8,11 @@ CREATE TABLE IF NOT EXISTS teachers(
 
 CREATE TABLE IF NOT EXISTS students(
     id INT AUTO_INCREMENT PRIMARY KEY,
-    email VARCHAR(255) NOT NULL UNIQUE
+    email VARCHAR(255) NOT NULL UNIQUE,
     is_suspended BOOLEAN DEFAULT FALSE
 );
 
-CREATE TABLE IF NOT EXISTS teacher_students(
+CREATE TABLE IF NOT EXISTS teacher_student(
     teacher_id INT NOT NULL,
     student_id INT NOT NULL,
     PRIMARY KEY(teacher_id, student_id),
