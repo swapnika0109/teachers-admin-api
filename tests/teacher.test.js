@@ -81,5 +81,18 @@ describe('Teacher admin API test cases', () => {
     expect(response.body.recipients).toContain("studentagnes@gmail.com");
   });
 
+  test('POST /api/retrievefornotifications - Should return only registered students when no @mention', async () => {
+  const response = await request(app)
+    .post('/api/retrievefornotifications')
+    .send({
+      teacher: "teacherken@gmail.com",
+      notification: "Hey everybody"
+    });
+
+  expect(response.statusCode).toBe(200);
+  expect(response.body).toHaveProperty('recipients');
+  expect(response.body.recipients).toContain("studentmary@gmail.com");
+});
+
 
 });
