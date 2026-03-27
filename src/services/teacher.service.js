@@ -10,6 +10,14 @@ class NotFoundError extends Error {
 
 exports.NotFoundError = NotFoundError
 
+/**
+ * Registers students under a teacher.
+ * 1) Check if teacher exists, if not insert teacher record first.
+ * 2) For each student, check if they exist, if not insert them.
+ * 3) Map each student to the teacher.
+ * @param {string} teacherEmail
+ * @param {string[]} students
+ */
 exports.registerStudents = async (teacherEmail, students) => {
   console.log(`registerStudents - ${students} by teacher ${teacherEmail}`)
   try {
@@ -39,6 +47,11 @@ exports.registerStudents = async (teacherEmail, students) => {
   }
 }
 
+/**
+ * Returns students common to ALL given teachers.
+ * @param {string | string[]} teachers
+ * @returns {string[]} list of student emails
+ */
 exports.commonStudentsOfAllTeachers = async (teachers) => {
   console.log(`commonStudentsOfAllTeachers - teachers: ${teachers}`)
   try {
@@ -51,6 +64,10 @@ exports.commonStudentsOfAllTeachers = async (teachers) => {
   }
 }
 
+/**
+ * Suspends a student. Throws NotFoundError if student does not exist.
+ * @param {string} student - student email
+ */
 exports.suspendStudent = async (student) => {
   console.log(`suspendStudent - student: ${student}`)
   const studentRecord = await studentRepo.findStudent(student)
@@ -58,13 +75,21 @@ exports.suspendStudent = async (student) => {
     throw new NotFoundError(`Student ${student} not found`)
   }
   try {
-    await studentRepo.updateStudent(true, student)
+    await studentRepo.updateStudent(student, true)
     console.log(`suspendStudent - student suspended: ${student}`)
   } catch (err) {
     throw new Error(`Failed to suspend the student: ${err.message}`)
   }
 }
 
+/**
+ * Returns list of students who can receive a notification from the teacher.
+ * Includes registered active students + @mentioned active students. No duplicates.
+ * Throws NotFoundError if teacher does not exist.
+ * @param {string} teacher - teacher email
+ * @param {string} notificationText - notification text (may contain @mentions)
+ * @returns {string[]} list of recipient emails
+ */
 exports.notifyStudents = async (teacher, notificationText) => {
   console.log(`notifyStudents - teacher: ${teacher}`)
   try {
@@ -73,7 +98,10 @@ exports.notifyStudents = async (teacher, notificationText) => {
       throw new NotFoundError(`Teacher ${teacher} not found`)
     }
 
-    const mentionedStudents = [...notificationText.matchAll(/@([\w.+-]+@[\w.-]+)/g)].map(m => m[1])
+    const mentionedStudents = notificationText
+      .split(' ')
+      .filter(word => word.startsWith('@'))
+      .map(word => word.slice(1))
 
     let activeStudentsToNotify = []
     if (mentionedStudents.length > 0) {

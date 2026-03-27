@@ -26,14 +26,15 @@ exports.registerStudentByTeacher = async (teacherID, studentID) => {
   return result
 }
 
-exports.listAllCommonStudentsOfTeachers = async (teacher) =>{
+exports.commonStudentsOfAllTeachers = async (teacher) =>{
+    const teachers = Array.isArray(teacher) ? teacher : [teacher]
     const [rows] = await db.query(
-        `Select s.email From students s 
-        JOIN teacher_student ts ON s.id = ts.student_id 
-        JOIN teachers t ON t.id = ts.teacher_id 
-        WHERE t.email IN (?) 
-        GROUP BY s.id 
-        HAVING COUNT(DISTINCT t.id) = ?`, 
+        `SELECT s.email FROM students s
+        JOIN teacher_student ts ON s.id = ts.student_id
+        JOIN teachers t ON t.id = ts.teacher_id
+        WHERE t.email IN (?)
+        GROUP BY s.id
+        HAVING COUNT(DISTINCT t.id) = ?`,
         [teachers, teachers.length]
     )
     return rows.map(row => row.email)
